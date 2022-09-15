@@ -1,19 +1,19 @@
-name: morning
+name: GoodMorning
 on:
   schedule:
-  - cron:  '0 0 * * *'
+  - cron:  '13 20 5 ? * *'
   workflow_dispatch:
 
 jobs:
   send_message:
     runs-on: ubuntu-latest
-    name: send morning to your girlfriend
+    name: send morning to everyone!
 
     steps:
     - name: checkout
       uses: actions/checkout@v3
       with:
-        ref: master
+        ref: morning_dev
 
     - name: sender
       uses: actions/setup-python@v2
