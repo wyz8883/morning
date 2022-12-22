@@ -16,11 +16,11 @@ def get_weather(city: str):
         res = requests.get(url).json()
         if res["code"] == 0:
             weather = res['data']['list'][0]
-            return weather['weather'], math.floor(weather['temp'])
+            return weather
         else:
             time.sleep(3)
             print(res)
-    return "未知", "0"
+    return {}
 
 
 def get_love_days(start_date: str):
@@ -59,15 +59,27 @@ def main():
     template_id = os.environ["TEMPLATE_ID"]
 
     client = WeChatClient(app_id, app_secret)
+    print(f"start_date: {start_date}")
+    print(f"city: {city}")
+    print(f"birthday: {birthday}")
 
     wm = WeChatMessage(client)
-    wea, temperature = get_weather(city)
+    weather = get_weather(city)
     data = {
-        "weather": {"value": wea}, "temperature": {"value": temperature},
+        "weather": {"value": weather.get("weather")},
+        "temperature": {"value": weather.get("temp")},
+        "highest": {
+            "value": math.floor(weather.get('high')),
+            "color": get_random_color()
+        },
+        "lowest": {
+            "value": math.floor(weather.get('low')),
+            "color": get_random_color()
+        },
         "love_days": {"value": get_love_days(start_date)},
         "birthday_left": {"value": get_birthday(birthday)},
         "words": {"value": get_words(), "color": get_random_color()},
-        "date": {"value": str(datetime.now().date())}
+        "date": {"value": str(datetime.now().date()), "color": get_random_color()}
     }
     for i in user_id.split(","):
         res = wm.send_template(i, template_id, data)
