@@ -1,6 +1,7 @@
 import math
 import os
 import random
+import time
 from datetime import date, datetime
 
 import requests
@@ -11,9 +12,15 @@ from wechatpy.client.api import WeChatMessage
 def get_weather(city: str):
     url = f"http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&" \
           f"clientType=android&sign=android&city={city}"
-    res = requests.get(url).json()
-    weather = res['data']['list'][0]
-    return weather['weather'], math.floor(weather['temp'])
+    for i in range(3):
+        res = requests.get(url).json()
+        if res["code"] == 0:
+            weather = res['data']['list'][0]
+            return weather['weather'], math.floor(weather['temp'])
+        else:
+            time.sleep(3)
+            print(res)
+    return "未知", "0"
 
 
 def get_love_days(start_date: str):
