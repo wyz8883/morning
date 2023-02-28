@@ -1,7 +1,5 @@
-import math
 import os
 import random
-import time
 from datetime import date, datetime
 
 import requests
@@ -9,18 +7,11 @@ from wechatpy import WeChatClient
 from wechatpy.client.api import WeChatMessage
 
 
-def get_weather(city: str):
-    url = f"http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&" \
-          f"clientType=android&sign=android&city={city}"
-    for i in range(3):
-        res = requests.get(url).json()
-        if res["code"] == 0:
-            weather = res['data']['list'][0]
-            return weather
-        else:
-            time.sleep(3)
-            print(res)
-    return {}
+def get_weather(province: str, city: str):
+    params = {"city": city, "province": province,
+              "weather_type": "observe", "source": "pc"}
+    res = requests.get("http://wis.qq.com/weather/common", params=params, timeout=7).json()
+    return res["data"]["observe"]
 
 
 def get_love_days(start_date: str):
@@ -34,7 +25,7 @@ def get_birthday(birthday):
     next_birthday = datetime.strptime(str(date.today().year) + "-" + birthday, "%Y-%m-%d")
     if next_birthday < datetime.now():
         next_birthday = next_birthday.replace(year=next_birthday.year + 1)
-    return (next_birthday - today).days
+    return (next_birthday - today).days + 1
 
 
 def get_words():
@@ -51,6 +42,7 @@ def get_random_color():
 def main():
     start_date = os.environ.get('START_DATE', '2017-06-25')
     city = os.environ.get('CITY', '武汉')
+    province = os.environ.get('PROVINCE', '湖北')
     birthday = os.environ.get('BIRTHDAY', '02-11')
 
     app_id = os.environ["APP_ID"]
@@ -64,18 +56,18 @@ def main():
     print(f"birthday: {birthday}")
 
     wm = WeChatMessage(client)
-    weather = get_weather(city)
+    weather = get_weather(province, city)
     data = {
         "weather": {"value": weather.get("weather")},
-        "temperature": {"value": weather.get("temp")},
-        "highest": {
-            "value": math.floor(weather.get('high')),
-            "color": get_random_color()
-        },
-        "lowest": {
-            "value": math.floor(weather.get('low')),
-            "color": get_random_color()
-        },
+        "temperature": {"value": weather.get("degree")},
+        # "highest": {
+        #     "value": math.floor(weather.get('high')),
+        #     "color": get_random_color()
+        # },
+        # "lowest": {
+        #     "value": math.floor(weather.get('low')),
+        #     "color": get_random_color()
+        # },
         "love_days": {"value": get_love_days(start_date)},
         "birthday_left": {"value": get_birthday(birthday)},
         "words": {"value": get_words(), "color": get_random_color()},
@@ -87,4 +79,5 @@ def main():
 
 
 if __name__ == '__main__':
+    # print(get_weather("湖北", "武汉"))
     main()
