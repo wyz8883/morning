@@ -7,9 +7,9 @@ import os
 import random
 
 today = datetime.now()
-start_date = os.environ['START_DATE']
-city = os.environ['CITY']
-birthday = os.environ['BIRTHDAY']
+# start_date = os.environ['START_DATE']
+# city = os.environ['CITY']
+# birthday = os.environ['BIRTHDAY']
 
 app_id = os.environ["APP_ID"]
 app_secret = os.environ["APP_SECRET"]
@@ -19,10 +19,15 @@ template_id = os.environ["TEMPLATE_ID"]
 
 
 def get_weather():
-  url = "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city=" + city
-  res = requests.get(url).json()
-  weather = res['data']['list'][0]
-  return weather['weather'], math.floor(weather['temp'])
+  url = "https://restapi.amap.com/v3/weather/weatherInfo?city=310107&key=e64067169de145e2282475fec4635344&output=JSON"
+  curWeaPara="&extensions=base"
+  # forcastWeaPara="&extensions=all"
+  curWea = requests.get(url+curWeaPara).json()
+  print(curWea)
+  # forcastWea= requests.get(url+forcastWeaPara)
+  curWeather = curWea['lives'][0]
+  # forWeather = res['forecast']['weather']
+  return curWeather['weather'], math.floor(int(curWeather['temperature']))
 
 def get_count():
   delta = today - datetime.strptime(start_date, "%Y-%m-%d")
@@ -48,6 +53,7 @@ client = WeChatClient(app_id, app_secret)
 
 wm = WeChatMessage(client)
 wea, temperature = get_weather()
-data = {"weather":{"value":wea},"temperature":{"value":temperature},"love_days":{"value":get_count()},"birthday_left":{"value":get_birthday()},"words":{"value":get_words(), "color":get_random_color()}}
+data = {"weather":{"value":wea},"temperature":{"value":temperature},"words":{"value":get_words(), "color":get_random_color()}}
 res = wm.send_template(user_id, template_id, data)
-print(res)
+# print("天气"+wea)
+# print("温度："+str(temperature))
